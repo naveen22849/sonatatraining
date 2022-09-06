@@ -1,0 +1,69 @@
+1)to increase salary of employees in the department 30 by 8%
+
+create or replace PROCEDURE inc_sal
+ (dept_no IN emp.deptno%TYPE)
+IS
+BEGIN
+ UPDATE emp
+ SET sal = ROUND (sal +sal * 8/100,2)
+      WHERE deptno = dept_no;
+END inc_sal;
+
+EXECUTE inc_sal(30);
+*******************************************************************************************************
+
+2) to calculate the Total take home(sal+comm) of an employee ( take input from User / environment)
+
+CREATE OR REPLACE FUNCTION TOTAL_SALARY
+(emp_no IN emp.empno%type) 
+RETURN NUMBER 
+IS 
+v_salary NUMBER;
+BEGIN
+select nvl(sal,0)+nvl(comm,0)
+into v_salary
+from emp
+where empno=emp_no;
+  RETURN v_salary;
+END TOTAL_SALARY;
+
+SELECT TOTAL_SALARY(7654)
+FROM emp;
+**********************************************************************************************************
+4. to display the employee ID, first name, job title and the hire date.
+DECLARE
+  
+  CURSOR emp_cursor IS
+    SELECT empno,ename,job, hiredate
+    FROM EMP;
+    emp_record emp_cursor%ROWTYPE;
+BEGIN
+  OPEN emp_cursor;
+  LOOP
+    FETCH emp_cursor INTO emp_record;
+    EXIT WHEN emp_cursor%ROWCOUNT > 10 OR emp_cursor%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE (TO_CHAR(emp_record.empno)||' '|| emp_record.ename||' '||emp_record.job||' '||TO_CHAR(emp_record.hiredate));
+  END LOOP;
+  CLOSE emp_cursor;
+END ;
+
+
+
+********************************************
+5. to display department name, Manager of the department and location.
+DECLARE
+   CURSOR c_emp (p_job VARCHAR2) is
+      SELECT DISTINCT e.ename,d.dname,d.loc
+      FROM emp e, dept d
+      WHERE JOB LIKE p_job and e.deptno=d.deptno;
+       C_emp_REC c_emp%ROWTYPE;
+BEGIN
+   OPEN c_emp('MANAGER');
+   LOOP
+      FETCH c_emp into C_emp_REC;
+      EXIT WHEN c_emp%NOTFOUND;
+      dbms_output.put_line(rpad(C_emp_REC.dname,12,' ')||' '||rpad(C_emp_REC.ename,6,' ')||' '||TO_CHAR(C_emp_REC.loc));  
+   END LOOP;
+   CLOSE c_emp;
+END;
+
